@@ -15,6 +15,12 @@ public class SeckillController {
     @PostMapping("/{seckillId}/execution")
     public SeckillResult<Void> execute(@PathVariable Long seckillId,
                                        @RequestParam Long userId) {
+        if (seckillId == null || seckillId <= 0) {
+            return SeckillResult.fail("参数错误");
+        }
+        if (userId == null || userId <= 0) {
+            return SeckillResult.fail("参数错误");
+        }
         return seckillService.execute(seckillId, userId);
     }
 }
