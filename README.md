@@ -4,7 +4,7 @@
 
 ## 技术栈
 
-- Spring Boot, MyBatis-Plus, Redis, RabbitMQ, JWT
+- Spring Boot, MyBatis-Plus, Redis, RabbitMQ, MySQL
 
 ## 核心设计
 
