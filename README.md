@@ -4,9 +4,7 @@
 
 ## 技术栈
 
-- **后端：** Spring Boot, MyBatis-Plus, Redis, RabbitMQ, JWT
-- **数据库：** MySQL
-- **前端：** Vue3
+- Spring Boot, MyBatis-Plus, Redis, RabbitMQ, JWT
 
 ## 核心设计
 
