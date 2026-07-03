@@ -13,6 +13,6 @@ public class SeckillOrder {
     private Long orderId;
     private Long seckillId;
     private Long userId;
-    private Short state;           // -1无效 0成功 1已付款
+    private Short state;
     private LocalDateTime createTime;
 }

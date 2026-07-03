@@ -17,21 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class SeckillConsumer {
 
     private final OrderService orderService;
-    private final SeckillDao seckillDao;  // 新增：减数据库库存
+    private final SeckillDao seckillDao;
 
     @RabbitListener(queues = "seckill.order")
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void handleOrder(SeckillMessage message) {
         log.info("收到订单消息: {}", message);
 
-        // 1. 数据库减库存
-        int affected = seckillDao.reduceStock(message.getSeckillId());
-        if (affected == 0) {
-            log.warn("数据库库存不足，丢弃消息: {}", message);
-            return;  // 库存已为0，不创建订单
-        }
-
-        // 2. 创建订单（唯一索引防重）
+        // 1. 先插订单：唯一索引 (seckill_id, user_id) 自动防 MQ 重复消费
         SeckillOrder order = new SeckillOrder();
         order.setSeckillId(message.getSeckillId());
         order.setUserId(message.getUserId());
@@ -39,11 +32,20 @@ public class SeckillConsumer {
 
         try {
             orderService.save(order);
-            log.info("订单创建成功: seckillId={}, userId={}", message.getSeckillId(), message.getUserId());
         } catch (DuplicateKeyException e) {
-            // 唯一索引 (seckill_id, user_id) 冲突，说明已下单
-            log.warn("重复订单，忽略: {}", message);
-            // 事务会自动回滚数据库库存扣减... 等等，这里有问题
+            log.warn("重复消费，已处理过，忽略: {}", message);
+            return;
         }
+
+        // 2. 再减数据库库存
+        // Redis 已原子扣减并保证库存够，若此处库存不足说明系统数据不一致，直接抛异常
+        int affected = seckillDao.reduceStock(message.getSeckillId());
+        if (affected == 0) {
+            log.error("数据不一致: Redis已扣减但数据库库存不足, seckillId={}", message.getSeckillId());
+            throw new IllegalStateException("库存数据不一致: seckillId=" + message.getSeckillId());
+        }
+
+        log.info("订单处理成功: seckillId={}, userId={}",
+                message.getSeckillId(), message.getUserId());
     }
 }

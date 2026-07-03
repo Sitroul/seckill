@@ -26,10 +26,10 @@ spring:
     password: guest
     virtual-host: /
 
-mybatis-plus:
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 打印 SQL
+#mybatis-plus:
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 打印 SQL
 
-logging:
-  level:
-    io.github.sitroul.seckill.dao: debug
+#logging:
+#  level:
+#    io.github.sitroul.seckill.dao: debug
